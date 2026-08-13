@@ -17,3 +17,10 @@ export interface QuestionStats {
   answered: number;
   dismissed: number;
 }
+
+export interface DisplayedQuestion {
+  id: string;
+  content: string;
+  created_at: string;
+  displayed_at: string;
+}

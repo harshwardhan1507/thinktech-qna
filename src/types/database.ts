@@ -50,6 +50,15 @@ export interface Database {
       [_ in never]: never;
     };
     Functions: {
+      get_displayed_question: {
+        Args: Record<string, never>;
+        Returns: {
+          id: string;
+          content: string;
+          created_at: string;
+          displayed_at: string;
+        } | null;
+      };
       next_question: {
         Args: Record<string, never>;
         Returns: {
