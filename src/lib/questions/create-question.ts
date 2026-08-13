@@ -13,6 +13,7 @@ export async function createQuestion(content: string): Promise<{ error: Error | 
     .insert({ content: trimmed });
 
   if (error) {
+    console.error("Supabase question submission error:", error);
     return { error: new Error(error.message) };
   }
 
