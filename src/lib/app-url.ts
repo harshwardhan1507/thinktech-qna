@@ -3,7 +3,7 @@
  * Reads NEXT_PUBLIC_APP_URL and guarantees clean trailing slash normalization.
  */
 export function getAskUrl(): string {
-  const rawUrl = process.env.NEXT_PUBLIC_APP_URL || "http://localhost:3000";
+  const rawUrl = process.env.NEXT_PUBLIC_APP_URL || "https://thinktech-qna.vercel.app";
 
   let parsed: URL;
   try {
