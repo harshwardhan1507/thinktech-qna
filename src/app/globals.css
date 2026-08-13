@@ -1,0 +1,24 @@
+@import "tailwindcss";
+
+:root {
+  --background: #09090b;
+  --surface-primary: #111113;
+  --surface-elevated: #18181b;
+  --border-subtle: #27272a;
+  --border-strong: #3f3f46;
+  --text-primary: #fafafa;
+  --text-secondary: #a1a1aa;
+  --text-muted: #71717a;
+  --text-disabled: #52525b;
+}
+
+body {
+  background-color: var(--background);
+  color: var(--text-primary);
+  font-family: var(--font-inter), system-ui, -apple-system, sans-serif;
+}
+
+::selection {
+  background-color: #fafafa;
+  color: #09090b;
+}
