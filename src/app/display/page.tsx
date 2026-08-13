@@ -1,7 +1,8 @@
 "use client";
 
 import * as React from "react";
-import { QRCodeSVG } from "qrcode.react";
+import { getAskUrl } from "@/lib/app-url";
+import { QrCode } from "@/components/qr/QrCode";
 import { supabaseAnon } from "@/lib/supabase";
 import type { DisplayedQuestion } from "@/types";
 import { getDisplayedQuestion } from "@/lib/display";
@@ -60,9 +61,8 @@ export default function StageDisplayPage() {
   const [errorMsg, setErrorMsg] = React.useState<string | null>(null);
   const [realtimeStatus, setRealtimeStatus] = React.useState<RealtimeStatus>("connecting");
 
-  // Normalize askUrl cleanly avoiding double trailing slashes
-  const rawAppUrl = process.env.NEXT_PUBLIC_APP_URL || "http://localhost:3000";
-  const askUrl = `${rawAppUrl.replace(/\/$/, "")}/ask`;
+  // Get normalized ask URL safely
+  const askUrl = getAskUrl();
 
   const loadDisplayedQuestion = React.useCallback(async () => {
     setIsLoading(true);
@@ -130,7 +130,7 @@ export default function StageDisplayPage() {
   }, [loadDisplayedQuestion]);
 
   return (
-    <main className="min-h-screen bg-[#09090B] text-[#FAFAFA] flex flex-col justify-between p-8 sm:p-16 select-none relative overflow-hidden">
+    <main className="min-h-screen bg-[#09090B] text-[#FAFAFA] flex flex-col justify-between p-8 sm:p-14 select-none relative overflow-hidden">
       {/* Stage Header */}
       <header className="w-full flex justify-between items-center z-10">
         <div className="flex items-center space-x-3">
@@ -164,7 +164,7 @@ export default function StageDisplayPage() {
       </header>
 
       {/* Center Stage Presentation Area */}
-      <section className="my-auto py-12 text-center max-w-5xl mx-auto w-full space-y-8 z-10">
+      <section className="my-auto py-8 text-center max-w-5xl mx-auto w-full space-y-8 z-10">
         {isLoading ? (
           /* Loading State */
           <div className="space-y-4 py-8">
@@ -201,7 +201,7 @@ export default function StageDisplayPage() {
           /* Empty / Waiting State */
           <div className="space-y-4 py-8 transition-all duration-500 motion-reduce:transition-none">
             <h1 className="text-3xl sm:text-5xl font-bold tracking-tight text-[#A1A1AA] leading-tight">
-              Waiting for the next question...
+              WAITING FOR THE NEXT QUESTION
             </h1>
             <p className="text-base text-[#71717A] font-mono">
               Questions submitted anonymously from phones will appear here live.
@@ -210,9 +210,9 @@ export default function StageDisplayPage() {
         )}
       </section>
 
-      {/* Footer Area: Dynamic QR Code & Stage Branding */}
+      {/* Footer Area: Dynamic QR Code Presentation Card & Stage Tagline */}
       <footer className="w-full flex flex-col md:flex-row items-center justify-between gap-6 pt-6 border-t border-[#27272A] z-10">
-        {/* Tagline */}
+        {/* Tagline & Subtitle */}
         <div className="text-left space-y-1">
           <p className="text-sm font-mono text-[#A1A1AA] tracking-wider uppercase font-semibold">
             Ask. Explore. Build.
@@ -222,23 +222,25 @@ export default function StageDisplayPage() {
           </p>
         </div>
 
-        {/* Dynamic QR Code Section */}
-        <div className="flex items-center space-x-4 bg-[#111113] border border-[#27272A] p-3 rounded-xl">
-          <div className="bg-[#FAFAFA] p-1.5 rounded-lg shrink-0">
-            <QRCodeSVG
-              value={askUrl}
-              size={56}
-              bgColor="#FAFAFA"
-              fgColor="#09090B"
-              level="M"
-            />
-          </div>
-          <div className="text-left space-y-0.5">
-            <p className="text-xs font-mono font-bold text-[#FAFAFA] tracking-wide uppercase">
-              SCAN TO ASK ANONYMOUSLY
+        {/* Audience QR Code Call-to-Action Card (Available in both active & waiting states) */}
+        <div className="flex items-center space-x-5 bg-[#111113] border border-[#27272A] p-3.5 rounded-2xl">
+          <QrCode
+            value={askUrl}
+            size={128}
+            ariaLabel="QR code to open ThinkTech anonymous Q&A"
+          />
+          <div className="text-left space-y-1 pr-2">
+            <p className="text-xs font-mono font-bold text-[#FAFAFA] tracking-widest uppercase">
+              ASK A QUESTION
+            </p>
+            <p className="text-xs font-mono text-[#A1A1AA]">
+              Scan the QR code
             </p>
             <p className="text-[11px] font-mono text-[#71717A]">
-              Point your camera at the QR code
+              or use the volunteer&apos;s phone
+            </p>
+            <p className="text-[10px] font-mono text-[#3F3F46] pt-1 select-all">
+              /ask
             </p>
           </div>
         </div>
