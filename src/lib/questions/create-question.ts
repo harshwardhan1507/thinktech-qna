@@ -15,13 +15,8 @@ export async function createQuestion(content: string): Promise<{ error: Error | 
     .insert({ content: trimmed });
 
   if (error) {
-    console.error("Supabase question submission error:", {
-      message: error.message,
-      code: error.code,
-      details: error.details,
-      hint: error.hint,
-    });
-    return { error: new Error(error.message) };
+    console.error("Supabase question submission error:", error.message || error);
+    return { error: new Error(error.message || "Failed to submit question.") };
   }
 
   return { error: null };
