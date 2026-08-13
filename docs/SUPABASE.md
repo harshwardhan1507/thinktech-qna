@@ -281,3 +281,35 @@ The `public.next_question()` RPC:
 - Uses `FOR UPDATE` row locking in explicit order (active displayed question first, oldest pending question second).
 - Transitions currently displayed question → `answered` and oldest pending question → `displayed` inside a single atomic operation.
 - Execution granted exclusively to `authenticated` role (`REVOKE EXECUTE FROM PUBLIC, anon`).
+
+---
+
+## 11. Public Stage Display RPC (Phase 7)
+
+In **Phase 7**, the stage display (`/display`) is connected to PostgreSQL via a dedicated public RPC:
+- `public.get_displayed_question()` is defined as `STABLE SECURITY DEFINER SET search_path = public, pg_catalog`.
+- Returns exclusively `id, content, created_at, displayed_at` for the active question (`status = 'displayed'`) or `null`.
+- Granted to `anon` and `authenticated`.
+- Anonymous clients retain **zero** direct `SELECT` permissions on `public.questions`.
+
+---
+
+## 12. Realtime Broadcast Architecture (Phase 8)
+
+In **Phase 8**, Realtime synchronization is implemented across `/moderator` and `/display` without polling or `setInterval` loops.
+
+### 12.1 Database Trigger & Payload Security
+
+- The `broadcast_question_changes_trigger` `AFTER INSERT OR UPDATE ON public.questions` executes `public.broadcast_question_changes()`.
+- Uses Supabase 4-argument Broadcast signature:
+  `realtime.send(payload, event, topic, is_private)` on topic `thinktech:qna`.
+- Broadcast payload is strictly sanitized:
+  - `/display` receives ONLY `{ id, content, created_at, displayed_at }` when a question becomes active, or `{ id: null, content: null, created_at: null, displayed_at: null }` when cleared.
+  - `/moderator` receives signals (`QUESTION_CREATED`, `QUESTION_STATE_CHANGED`) to trigger an authoritative background re-fetch via `fetchModeratorQuestions()`.
+
+### 12.2 Subscription & Reconnection Model
+
+- **Initial Load**: `/moderator` fetches via authenticated `fetchModeratorQuestions()`; `/display` fetches via `get_displayed_question()` RPC.
+- **Live Updates**: Clients subscribe to topic `thinktech:qna` using `@supabase/supabase-js` Realtime client.
+- **Reconnection**: Upon channel reconnection, components perform ONE authoritative RPC fetch for state reconciliation.
+- **Status Badges**: Subtitle indicators report connection states (`LIVE`, `CONNECTING`, `RECONNECTING`, `OFFLINE`).

@@ -14,9 +14,13 @@ import {
   signOutModerator,
   isModeratorSession,
 } from "@/lib/moderator";
+import {
+  subscribeToQnaChannel,
+  unsubscribeQnaChannel,
+  type RealtimeStatus,
+} from "@/lib/realtime";
 import { ModeratorLoginForm } from "@/components/moderator/ModeratorLoginForm";
 import { Button } from "@/components/ui/button";
-import { StatusBadge } from "@/components/ui/badge";
 
 function deriveQuestionStats(questions: Question[]): QuestionStats {
   return {
@@ -45,6 +49,21 @@ function formatTimeAgo(isoString: string | null | undefined): string {
   return `${days} day${days === 1 ? "" : "s"} ago`;
 }
 
+function getRealtimeStatusBadgeText(status: RealtimeStatus): string {
+  switch (status) {
+    case "connected":
+      return "LIVE";
+    case "connecting":
+      return "CONNECTING";
+    case "reconnecting":
+      return "RECONNECTING";
+    case "disconnected":
+      return "OFFLINE";
+    case "error":
+      return "CONNECTION ERROR";
+  }
+}
+
 export default function ModeratorDashboardPage() {
   const [session, setSession] = React.useState<Session | null>(null);
   const [isAuthLoading, setIsAuthLoading] = React.useState(true);
@@ -52,6 +71,7 @@ export default function ModeratorDashboardPage() {
   const [isLoadingQuestions, setIsLoadingQuestions] = React.useState(false);
   const [actionError, setActionError] = React.useState<string | null>(null);
   const [actionInFlightId, setActionInFlightId] = React.useState<string | null>(null);
+  const [realtimeStatus, setRealtimeStatus] = React.useState<RealtimeStatus>("connecting");
 
   // Check auth session & set up listener
   React.useEffect(() => {
@@ -113,6 +133,30 @@ export default function ModeratorDashboardPage() {
       active = false;
     };
   }, [session]);
+
+  // Subscribe to Realtime Broadcast channel when authenticated
+  React.useEffect(() => {
+    if (!session || !isModeratorSession(session)) return;
+
+    const channel = subscribeToQnaChannel(
+      supabase,
+      () => {
+        // Background refresh upon realtime broadcast event
+        loadData();
+      },
+      (status) => {
+        setRealtimeStatus(status);
+        if (status === "connected") {
+          // Authoritative refresh on reconnect
+          loadData();
+        }
+      }
+    );
+
+    return () => {
+      unsubscribeQnaChannel(supabase, channel);
+    };
+  }, [session, loadData]);
 
   const handleSignOut = async () => {
     await signOutModerator();
@@ -206,7 +250,18 @@ export default function ModeratorDashboardPage() {
             <span className="font-mono text-xs tracking-widest uppercase text-[#71717A] font-semibold">
               THINKTECH Q&A
             </span>
-            <StatusBadge status="live" />
+            <span className="text-xs font-mono text-[#FAFAFA] border border-[#27272A] bg-[#111113] rounded-full px-3 py-0.5 uppercase tracking-wider flex items-center space-x-2">
+              <span
+                className={`h-1.5 w-1.5 rounded-full ${
+                  realtimeStatus === "connected"
+                    ? "bg-emerald-400 animate-pulse"
+                    : realtimeStatus === "connecting" || realtimeStatus === "reconnecting"
+                    ? "bg-amber-400 animate-pulse"
+                    : "bg-rose-400"
+                }`}
+              ></span>
+              <span>{getRealtimeStatusBadgeText(realtimeStatus)}</span>
+            </span>
           </div>
           <h1 className="text-xl sm:text-2xl font-bold tracking-tight text-[#FAFAFA] mt-1">
             Moderator Control Panel
@@ -283,7 +338,9 @@ export default function ModeratorDashboardPage() {
               <span className="text-xs font-mono text-[#A1A1AA] tracking-wide uppercase">
                 Active Question
               </span>
-              <StatusBadge status="displayed" />
+              <span className="text-xs font-mono text-emerald-400 border border-emerald-500/30 bg-emerald-500/10 px-2.5 py-0.5 rounded-full uppercase tracking-wider">
+                Displayed
+              </span>
             </div>
             <p className="text-xl sm:text-2xl font-bold text-[#FAFAFA] leading-snug">
               &ldquo;{currentDisplayedQuestion.content}&rdquo;
@@ -407,7 +464,7 @@ export default function ModeratorDashboardPage() {
           <div className="p-8 text-center rounded-xl bg-[#111113] border border-[#27272A]">
             <p className="text-[#A1A1AA] text-sm">No pending questions in queue.</p>
             <p className="text-xs text-[#71717A] font-mono mt-1">
-              New submissions from student phones will appear here upon refresh.
+              New submissions from student phones will appear here in real-time.
             </p>
           </div>
         )}

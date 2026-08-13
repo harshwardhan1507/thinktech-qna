@@ -6,7 +6,7 @@ ThinkTech Q&A is an anonymous, real-time Q&A platform being developed for ThinkT
 
 ## Current Status
 
-`Phase 6 — Question State Management & Hardening`
+`Phase 8 — Supabase Realtime Complete`
 
 ## Tech Stack
 
@@ -14,8 +14,8 @@ ThinkTech Q&A is an anonymous, real-time Q&A platform being developed for ThinkT
 * **TypeScript**
 * **Tailwind CSS**
 * **Supabase JavaScript Client** (`@supabase/supabase-js`)
-* **PostgreSQL** (Schema, RLS, Indexes, Constraints)
-* **Supabase Realtime** — *planned*
+* **PostgreSQL** (Schema, RLS, Indexes, Constraints, Triggers)
+* **Supabase Realtime** (Database-Triggered Broadcast)
 
 ## Database Setup
 

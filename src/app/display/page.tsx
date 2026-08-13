@@ -2,8 +2,15 @@
 
 import * as React from "react";
 import { QRCodeSVG } from "qrcode.react";
+import { supabaseAnon } from "@/lib/supabase";
 import type { DisplayedQuestion } from "@/types";
 import { getDisplayedQuestion } from "@/lib/display";
+import {
+  subscribeToQnaChannel,
+  unsubscribeQnaChannel,
+  type RealtimeStatus,
+  type QnaRealtimeBroadcastEvent,
+} from "@/lib/realtime";
 
 function formatTimeAgo(isoString: string | null | undefined): string {
   if (!isoString) return "";
@@ -32,10 +39,26 @@ function getQuestionFontSizeClass(length: number): string {
   return "text-xl sm:text-2xl md:text-3xl leading-[1.35]";
 }
 
+function getRealtimeStatusBadgeText(status: RealtimeStatus): string {
+  switch (status) {
+    case "connected":
+      return "LIVE";
+    case "connecting":
+      return "CONNECTING";
+    case "reconnecting":
+      return "RECONNECTING";
+    case "disconnected":
+      return "OFFLINE";
+    case "error":
+      return "CONNECTION ERROR";
+  }
+}
+
 export default function StageDisplayPage() {
   const [question, setQuestion] = React.useState<DisplayedQuestion | null>(null);
   const [isLoading, setIsLoading] = React.useState(true);
   const [errorMsg, setErrorMsg] = React.useState<string | null>(null);
+  const [realtimeStatus, setRealtimeStatus] = React.useState<RealtimeStatus>("connecting");
 
   // Normalize askUrl cleanly avoiding double trailing slashes
   const rawAppUrl = process.env.NEXT_PUBLIC_APP_URL || "http://localhost:3000";
@@ -57,7 +80,7 @@ export default function StageDisplayPage() {
     setIsLoading(false);
   }, []);
 
-  // Perform ONE initial fetch upon page mount. No Realtime, no polling loops.
+  // Initial load via get_displayed_question() RPC
   React.useEffect(() => {
     let active = true;
     getDisplayedQuestion().then((res) => {
@@ -74,6 +97,37 @@ export default function StageDisplayPage() {
       active = false;
     };
   }, []);
+
+  // Subscribe to Realtime Broadcast channel (using public supabaseAnon client)
+  React.useEffect(() => {
+    const handleEvent = (event: QnaRealtimeBroadcastEvent) => {
+      const displayPayload = event.payload.display;
+      if (displayPayload && displayPayload.id && displayPayload.content && displayPayload.displayed_at) {
+        setQuestion({
+          id: displayPayload.id,
+          content: displayPayload.content,
+          created_at: displayPayload.created_at || new Date().toISOString(),
+          displayed_at: displayPayload.displayed_at,
+        });
+      } else if (displayPayload !== undefined) {
+        setQuestion(null);
+      }
+    };
+
+    const handleStatusChange = (status: RealtimeStatus) => {
+      setRealtimeStatus(status);
+      if (status === "connected") {
+        // Authoritative refresh on reconnect
+        loadDisplayedQuestion();
+      }
+    };
+
+    const channel = subscribeToQnaChannel(supabaseAnon, handleEvent, handleStatusChange);
+
+    return () => {
+      unsubscribeQnaChannel(supabaseAnon, channel);
+    };
+  }, [loadDisplayedQuestion]);
 
   return (
     <main className="min-h-screen bg-[#09090B] text-[#FAFAFA] flex flex-col justify-between p-8 sm:p-16 select-none relative overflow-hidden">
@@ -94,8 +148,17 @@ export default function StageDisplayPage() {
           >
             {isLoading ? "Loading..." : "Refresh ↻"}
           </button>
-          <span className="text-xs font-mono text-[#FAFAFA] border border-[#27272A] bg-[#111113] rounded-full px-3.5 py-1 uppercase tracking-wider">
-            LIVE Q&A
+          <span className="text-xs font-mono text-[#FAFAFA] border border-[#27272A] bg-[#111113] rounded-full px-3.5 py-1 uppercase tracking-wider flex items-center space-x-2">
+            <span
+              className={`h-1.5 w-1.5 rounded-full ${
+                realtimeStatus === "connected"
+                  ? "bg-emerald-400 animate-pulse"
+                  : realtimeStatus === "connecting" || realtimeStatus === "reconnecting"
+                  ? "bg-amber-400 animate-pulse"
+                  : "bg-rose-400"
+              }`}
+            ></span>
+            <span>{getRealtimeStatusBadgeText(realtimeStatus)}</span>
           </span>
         </div>
       </header>
