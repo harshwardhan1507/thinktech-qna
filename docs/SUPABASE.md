@@ -256,3 +256,28 @@ UPDATE auth.users
 SET raw_app_meta_data = raw_app_meta_data || '{"role": "moderator"}'::jsonb
 WHERE email = 'moderator@thinktech.org';
 ```
+
+---
+
+## 10. Question State Management & Hardening (Phase 6)
+
+In **Phase 6**, question lifecycle transitions, timestamp invariants, and field immutability are strictly enforced at the PostgreSQL database level.
+
+### 10.1 PostgreSQL Lifecycle & Immutability Trigger
+
+The `enforce_question_lifecycle_trigger` BEFORE UPDATE trigger on `public.questions`:
+1. Rejects attempts to modify `id`, `content`, or `created_at` post-insertion using `IS DISTINCT FROM`.
+2. Validates status transitions:
+   - `pending` → `displayed` (requires `displayed_at`, rejects `answered_at` & `dismissed_at`).
+   - `pending` → `dismissed` (requires `dismissed_at`, rejects `displayed_at` & `answered_at`).
+   - `displayed` → `answered` (requires `answered_at`, preserves `displayed_at`, rejects `dismissed_at`).
+3. Rejects all forbidden transitions (e.g. `answered` → `pending`, `dismissed` → `displayed`) with SQL error `45000`.
+
+### 10.2 Atomic `next_question()` RPC
+
+The `public.next_question()` RPC:
+- Defined as `SECURITY DEFINER SET search_path = public, pg_catalog`.
+- Verifies caller has `app_metadata.role = 'moderator'`.
+- Uses `FOR UPDATE` row locking in explicit order (active displayed question first, oldest pending question second).
+- Transitions currently displayed question → `answered` and oldest pending question → `displayed` inside a single atomic operation.
+- Execution granted exclusively to `authenticated` role (`REVOKE EXECUTE FROM PUBLIC, anon`).

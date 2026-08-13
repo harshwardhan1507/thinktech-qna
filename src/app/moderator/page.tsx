@@ -83,13 +83,13 @@ export default function ModeratorDashboardPage() {
     setIsLoadingQuestions(true);
     setActionError(null);
 
-    const { data, error } = await fetchModeratorQuestions();
+    const res = await fetchModeratorQuestions();
 
-    if (error) {
-      setActionError(`Unable to load questions: ${error.message}`);
+    if (!res.success) {
+      setActionError(res.message);
       setQuestions([]);
     } else {
-      setQuestions(data || []);
+      setQuestions(res.data || []);
     }
 
     setIsLoadingQuestions(false);
@@ -99,13 +99,13 @@ export default function ModeratorDashboardPage() {
   React.useEffect(() => {
     let active = true;
     if (session && isModeratorSession(session)) {
-      fetchModeratorQuestions().then(({ data, error }) => {
+      fetchModeratorQuestions().then((res) => {
         if (!active) return;
-        if (error) {
-          setActionError(`Unable to load questions: ${error.message}`);
+        if (!res.success) {
+          setActionError(res.message);
           setQuestions([]);
         } else {
-          setQuestions(data || []);
+          setQuestions(res.data || []);
         }
       });
     }
@@ -125,8 +125,8 @@ export default function ModeratorDashboardPage() {
     setActionError(null);
 
     const res = await showQuestion(id);
-    if (res.error) {
-      setActionError(res.error.message);
+    if (!res.success) {
+      setActionError(res.message);
     }
 
     await loadData();
@@ -138,8 +138,8 @@ export default function ModeratorDashboardPage() {
     setActionError(null);
 
     const res = await dismissQuestion(id);
-    if (res.error) {
-      setActionError(res.error.message);
+    if (!res.success) {
+      setActionError(res.message);
     }
 
     await loadData();
@@ -151,8 +151,8 @@ export default function ModeratorDashboardPage() {
     setActionError(null);
 
     const res = await answerQuestion(id);
-    if (res.error) {
-      setActionError(res.error.message);
+    if (!res.success) {
+      setActionError(res.message);
     }
 
     await loadData();
@@ -160,16 +160,14 @@ export default function ModeratorDashboardPage() {
   };
 
   const handleNextQuestion = async () => {
-    const current = questions.find((q) => q.status === "displayed");
-    const pending = questions.filter((q) => q.status === "pending");
-    const oldestPending = pending.length > 0 ? pending[0] : undefined;
-
     setActionInFlightId("next-action");
     setActionError(null);
 
-    const res = await nextQuestion(current?.id, oldestPending?.id);
-    if (res.error) {
-      setActionError(res.error.message);
+    const res = await nextQuestion();
+    if (!res.success) {
+      setActionError(res.message);
+    } else if (res.code === "NO_PENDING") {
+      setActionError("Current question marked as answered. No pending questions remain in queue.");
     }
 
     await loadData();
@@ -236,7 +234,7 @@ export default function ModeratorDashboardPage() {
         </div>
       </header>
 
-      {/* Action / Error Banner */}
+      {/* Action / Notification Banner */}
       {actionError && (
         <div className="p-3 rounded-lg bg-rose-500/10 border border-rose-500/30 text-rose-400 text-xs font-mono flex justify-between items-center">
           <span>{actionError}</span>
@@ -309,7 +307,7 @@ export default function ModeratorDashboardPage() {
                   variant="primary"
                   size="sm"
                   isLoading={actionInFlightId === "next-action"}
-                  disabled={actionInFlightId !== null || pendingQuestions.length === 0}
+                  disabled={actionInFlightId !== null}
                 >
                   Next &rarr;
                 </Button>

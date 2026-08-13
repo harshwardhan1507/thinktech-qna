@@ -6,7 +6,7 @@ ThinkTech Q&A is an anonymous, real-time Q&A platform being developed for ThinkT
 
 ## Current Status
 
-`Phase 4 — Real Student Submission`
+`Phase 6 — Question State Management & Hardening`
 
 ## Tech Stack
 

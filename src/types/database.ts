@@ -50,7 +50,14 @@ export interface Database {
       [_ in never]: never;
     };
     Functions: {
-      [_ in never]: never;
+      next_question: {
+        Args: Record<string, never>;
+        Returns: {
+          status: "success" | "no_pending";
+          displayed_question_id: string | null;
+          answered_question_id: string | null;
+        };
+      };
     };
     Enums: {
       question_status: DatabaseQuestionStatus;
