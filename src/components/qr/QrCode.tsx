@@ -24,6 +24,7 @@ export function QrCode({
     <div
       role="img"
       aria-label={ariaLabel}
+      style={{ width: size, height: size }}
       className={`inline-flex flex-col items-center justify-center bg-[#FAFAFA] p-3 sm:p-4 rounded-2xl shadow-lg border border-[#27272A] aspect-square shrink-0 ${className}`}
     >
       <QRCodeSVG
@@ -32,6 +33,7 @@ export function QrCode({
         bgColor="#FAFAFA"
         fgColor="#09090B"
         level="M"
+        className="w-full h-full"
       />
     </div>
   );

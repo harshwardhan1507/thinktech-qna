@@ -210,7 +210,7 @@ export default function StageDisplayPage() {
         )}
       </section>
 
-      {/* Footer Area: Dynamic QR Code Presentation Card & Stage Tagline */}
+      {/* Footer Area: Dynamic Projector QR Code Presentation Card & Stage Tagline */}
       <footer className="w-full flex flex-col md:flex-row items-center justify-between gap-6 pt-6 border-t border-[#27272A] z-10">
         {/* Tagline & Subtitle */}
         <div className="text-left space-y-1">
@@ -223,23 +223,23 @@ export default function StageDisplayPage() {
         </div>
 
         {/* Audience QR Code Call-to-Action Card (Available in both active & waiting states) */}
-        <div className="flex items-center space-x-5 bg-[#111113] border border-[#27272A] p-3.5 rounded-2xl">
+        <div className="flex flex-col sm:flex-row items-center space-y-3 sm:space-y-0 sm:space-x-5 bg-[#111113] border border-[#27272A] p-4 rounded-2xl">
           <QrCode
             value={askUrl}
-            size={128}
+            size={280}
             ariaLabel="QR code to open ThinkTech anonymous Q&A"
           />
-          <div className="text-left space-y-1 pr-2">
-            <p className="text-xs font-mono font-bold text-[#FAFAFA] tracking-widest uppercase">
+          <div className="text-center sm:text-left space-y-1.5 pr-2">
+            <p className="text-sm font-mono font-bold text-[#FAFAFA] tracking-widest uppercase">
               ASK A QUESTION
             </p>
             <p className="text-xs font-mono text-[#A1A1AA]">
               Scan the QR code
             </p>
-            <p className="text-[11px] font-mono text-[#71717A]">
+            <p className="text-xs font-mono text-[#71717A]">
               or use the volunteer&apos;s phone
             </p>
-            <p className="text-[10px] font-mono text-[#3F3F46] pt-1 select-all">
+            <p className="text-xs font-mono text-[#3F3F46] pt-1 select-all">
               /ask
             </p>
           </div>
