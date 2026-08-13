@@ -61,8 +61,24 @@ export default function StageDisplayPage() {
   const [errorMsg, setErrorMsg] = React.useState<string | null>(null);
   const [realtimeStatus, setRealtimeStatus] = React.useState<RealtimeStatus>("connecting");
 
-  // Get normalized ask URL safely
+  // Client-side presentation session question counter & last seen ID tracking
+  const [questionCounter, setQuestionCounter] = React.useState(0);
+  const lastSeenQuestionIdRef = React.useRef<string | null>(null);
+
+  // Normalize askUrl safely
   const askUrl = getAskUrl();
+
+  const updateQuestionState = React.useCallback((nextQuestion: DisplayedQuestion | null) => {
+    if (nextQuestion && nextQuestion.id) {
+      if (lastSeenQuestionIdRef.current !== nextQuestion.id) {
+        lastSeenQuestionIdRef.current = nextQuestion.id;
+        setQuestionCounter((prev) => prev + 1);
+      }
+      setQuestion(nextQuestion);
+    } else {
+      setQuestion(null);
+    }
+  }, []);
 
   const loadDisplayedQuestion = React.useCallback(async () => {
     setIsLoading(true);
@@ -71,14 +87,14 @@ export default function StageDisplayPage() {
     const res = await getDisplayedQuestion();
 
     if (!res.success) {
-      setErrorMsg(res.message);
-      setQuestion(null);
+      // If we already have a loaded question, retain it upon RPC network failure
+      setErrorMsg(question ? null : res.message);
     } else {
-      setQuestion(res.data ?? null);
+      updateQuestionState(res.data ?? null);
     }
 
     setIsLoading(false);
-  }, []);
+  }, [question, updateQuestionState]);
 
   // Initial load via get_displayed_question() RPC
   React.useEffect(() => {
@@ -89,28 +105,28 @@ export default function StageDisplayPage() {
         setErrorMsg(res.message);
         setQuestion(null);
       } else {
-        setQuestion(res.data ?? null);
+        updateQuestionState(res.data ?? null);
       }
       setIsLoading(false);
     });
     return () => {
       active = false;
     };
-  }, []);
+  }, [updateQuestionState]);
 
   // Subscribe to Realtime Broadcast channel (using public supabaseAnon client)
   React.useEffect(() => {
     const handleEvent = (event: QnaRealtimeBroadcastEvent) => {
       const displayPayload = event.payload.display;
       if (displayPayload && displayPayload.id && displayPayload.content && displayPayload.displayed_at) {
-        setQuestion({
+        updateQuestionState({
           id: displayPayload.id,
           content: displayPayload.content,
           created_at: displayPayload.created_at || new Date().toISOString(),
           displayed_at: displayPayload.displayed_at,
         });
       } else if (displayPayload !== undefined) {
-        setQuestion(null);
+        updateQuestionState(null);
       }
     };
 
@@ -127,7 +143,7 @@ export default function StageDisplayPage() {
     return () => {
       unsubscribeQnaChannel(supabaseAnon, channel);
     };
-  }, [loadDisplayedQuestion]);
+  }, [loadDisplayedQuestion, updateQuestionState]);
 
   return (
     <main className="min-h-screen bg-[#09090B] text-[#FAFAFA] flex flex-col justify-between p-8 sm:p-14 select-none relative overflow-hidden">
@@ -136,7 +152,7 @@ export default function StageDisplayPage() {
         <div className="flex items-center space-x-3">
           <span className="h-2.5 w-2.5 rounded-full bg-[#FAFAFA] animate-pulse"></span>
           <span className="font-mono text-sm tracking-[0.25em] uppercase text-[#71717A] font-semibold">
-            THINKTECH
+            THINKTECH LIVE Q&amp;A
           </span>
         </div>
         <div className="flex items-center space-x-4">
@@ -164,27 +180,41 @@ export default function StageDisplayPage() {
       </header>
 
       {/* Center Stage Presentation Area */}
-      <section className="my-auto py-8 text-center max-w-5xl mx-auto w-full space-y-8 z-10">
-        {isLoading ? (
-          /* Loading State */
+      <section className="my-auto py-8 text-center max-w-5xl mx-auto w-full space-y-6 z-10">
+        {isLoading && !question ? (
+          /* Initial Loading State */
           <div className="space-y-4 py-8">
             <h1 className="text-2xl sm:text-4xl font-bold tracking-tight text-[#71717A] font-mono animate-pulse uppercase">
               Connecting to Stage Display...
             </h1>
           </div>
-        ) : errorMsg ? (
-          /* Error State */
+        ) : errorMsg && !question ? (
+          /* Error State (Only if 0 question is loaded) */
           <div className="space-y-4 py-8 max-w-xl mx-auto">
             <h1 className="text-2xl sm:text-3xl font-bold tracking-tight text-rose-400">
-              Unable to load the current question.
+              UNABLE TO LOAD THE DISPLAY
             </h1>
             <p className="text-sm text-[#71717A] font-mono">
-              Please refresh this display or check your network connection.
+              Please refresh this screen or check network connection.
             </p>
           </div>
         ) : question ? (
           /* Active Displayed Question State */
-          <div className="space-y-6 transition-all duration-500 motion-reduce:transition-none motion-reduce:transform-none">
+          <div
+            key={question.id}
+            className="space-y-6 transition-all duration-400 motion-reduce:transition-none motion-reduce:transform-none animate-in fade-in slide-in-from-bottom-3 duration-400"
+          >
+            <div className="flex items-center justify-center space-x-3">
+              {questionCounter > 0 && (
+                <span className="text-xs font-mono border border-[#3F3F46] bg-[#18181B] text-[#FAFAFA] px-3 py-0.5 rounded-full uppercase tracking-widest font-bold">
+                  QUESTION #{String(questionCounter).padStart(2, "0")}
+                </span>
+              )}
+              <span className="text-xs font-mono text-[#A1A1AA] tracking-widest uppercase">
+                CURRENT QUESTION
+              </span>
+            </div>
+
             <h1
               className={`font-extrabold tracking-tight text-[#FAFAFA] max-w-4xl mx-auto ${getQuestionFontSizeClass(
                 question.content.length
@@ -192,25 +222,26 @@ export default function StageDisplayPage() {
             >
               &ldquo;{question.content}&rdquo;
             </h1>
+
             <div className="inline-flex items-center gap-2 px-4 py-1.5 rounded-full border border-[#27272A] bg-[#111113] text-[#A1A1AA] font-mono text-xs sm:text-sm tracking-widest uppercase">
               <span className="h-1.5 w-1.5 rounded-full bg-[#FAFAFA]"></span>
-              Anonymous Question &bull; Displayed {formatTimeAgo(question.displayed_at)}
+              ANONYMOUS QUESTION &bull; Displayed {formatTimeAgo(question.displayed_at)}
             </div>
           </div>
         ) : (
           /* Empty / Waiting State */
-          <div className="space-y-4 py-8 transition-all duration-500 motion-reduce:transition-none">
+          <div className="space-y-4 py-8 transition-all duration-400 motion-reduce:transition-none animate-in fade-in duration-400">
             <h1 className="text-3xl sm:text-5xl font-bold tracking-tight text-[#A1A1AA] leading-tight">
               WAITING FOR THE NEXT QUESTION
             </h1>
             <p className="text-base text-[#71717A] font-mono">
-              Questions submitted anonymously from phones will appear here live.
+              Questions will appear here automatically.
             </p>
           </div>
         )}
       </section>
 
-      {/* Footer Area: Dynamic Projector QR Code Presentation Card & Stage Tagline */}
+      {/* Footer Area: Dynamic 320px Projector QR Code Presentation Card & Stage Tagline */}
       <footer className="w-full flex flex-col md:flex-row items-center justify-between gap-6 pt-6 border-t border-[#27272A] z-10">
         {/* Tagline & Subtitle */}
         <div className="text-left space-y-1">
@@ -218,15 +249,15 @@ export default function StageDisplayPage() {
             Ask. Explore. Build.
           </p>
           <p className="text-xs text-[#71717A] font-mono">
-            ThinkTech Orientation Live Q&A Stage
+            ThinkTech Orientation Live Q&amp;A Stage
           </p>
         </div>
 
-        {/* Audience QR Code Call-to-Action Card (Available in both active & waiting states) */}
+        {/* Audience QR Code Call-to-Action Card (Available in both active & waiting states, target size 320px for projectors) */}
         <div className="flex flex-col sm:flex-row items-center space-y-3 sm:space-y-0 sm:space-x-5 bg-[#111113] border border-[#27272A] p-4 rounded-2xl">
           <QrCode
             value={askUrl}
-            size={280}
+            size={320}
             ariaLabel="QR code to open ThinkTech anonymous Q&A"
           />
           <div className="text-center sm:text-left space-y-1.5 pr-2">
