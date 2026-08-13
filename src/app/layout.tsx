@@ -18,8 +18,8 @@ export default function RootLayout({
   children: React.ReactNode;
 }>) {
   return (
-    <html lang="en" className={`${inter.variable} dark`} suppressHydrationWarning>
-      <body className="min-h-screen bg-[#09090B] text-[#FAFAFA] antialiased flex flex-col" suppressHydrationWarning>
+    <html lang="en" className={inter.variable} suppressHydrationWarning>
+      <body className="min-h-screen bg-white text-[#111111] antialiased flex flex-col" suppressHydrationWarning>
         {children}
       </body>
     </html>

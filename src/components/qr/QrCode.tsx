@@ -25,13 +25,13 @@ export function QrCode({
       role="img"
       aria-label={ariaLabel}
       style={{ width: size, height: size }}
-      className={`inline-flex flex-col items-center justify-center bg-[#FAFAFA] p-3 sm:p-4 rounded-2xl shadow-lg border border-[#27272A] aspect-square shrink-0 ${className}`}
+      className={`inline-flex flex-col items-center justify-center bg-white p-3 sm:p-4 rounded-2xl shadow-[0_2px_12px_rgba(17,17,17,0.06)] border border-[#E5E7EB] aspect-square shrink-0 ${className}`}
     >
       <QRCodeSVG
         value={value}
         size={size}
-        bgColor="#FAFAFA"
-        fgColor="#09090B"
+        bgColor="#FFFFFF"
+        fgColor="#111111"
         level="M"
         className="w-full h-full"
       />

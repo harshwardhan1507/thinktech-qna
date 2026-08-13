@@ -21,23 +21,23 @@ export const Button = React.forwardRef<HTMLButtonElement, ButtonProps>(
     ref
   ) => {
     const baseStyles =
-      "inline-flex items-center justify-center font-medium transition-all duration-150 focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-[#FAFAFA] focus-visible:ring-offset-2 focus-visible:ring-offset-[#09090B] disabled:opacity-40 disabled:pointer-events-none active:scale-[0.98]";
+      "inline-flex items-center justify-center font-medium transition-all duration-150 focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-[#1769D1] focus-visible:ring-offset-2 focus-visible:ring-offset-white disabled:opacity-40 disabled:pointer-events-none active:scale-[0.98] cursor-pointer";
 
     const variants = {
       primary:
-        "bg-[#FAFAFA] text-[#09090B] hover:bg-zinc-200 active:bg-zinc-300 shadow-sm",
+        "bg-[#1769D1] text-white hover:bg-[#1255B0] active:bg-[#0F4A9E] shadow-sm",
       secondary:
-        "bg-[#18181B] border border-[#27272A] text-[#FAFAFA] hover:bg-zinc-800 hover:border-[#3F3F46] active:bg-zinc-800/80",
+        "bg-white border border-[#D9DDE3] text-[#111111] hover:bg-[#F5F6F7] hover:border-[#C5CAD1] active:bg-[#EDEEF0]",
       ghost:
-        "bg-transparent text-zinc-400 hover:text-[#FAFAFA] hover:bg-[#18181B]/60 active:bg-[#18181B]",
+        "bg-transparent text-[#687280] hover:text-[#111111] hover:bg-[#F5F6F7] active:bg-[#EDEEF0]",
       danger:
-        "bg-rose-500/5 border border-rose-500/20 text-rose-400 hover:bg-rose-500/10 hover:border-rose-500/30 active:bg-rose-500/20",
+        "bg-white border border-[#EF4444] text-[#EF4444] hover:bg-red-50 active:bg-red-100",
     };
 
     const sizes = {
       sm: "h-8 px-3 text-xs rounded-lg gap-1.5",
-      md: "h-10 px-4 text-sm rounded-lg gap-2",
-      lg: "h-12 px-6 text-base rounded-lg gap-2.5",
+      md: "h-10 px-4 text-sm rounded-[10px] gap-2",
+      lg: "h-12 px-6 text-base rounded-[10px] gap-2.5",
     };
 
     return (

@@ -9,6 +9,12 @@ import type { ActionResult } from "@/lib/questions";
  * Safe for anonymous public execution.
  */
 export async function getDisplayedQuestion(): Promise<ActionResult<DisplayedQuestion | null>> {
+  if (process.env.NODE_ENV === "development") {
+    console.debug("[DISPLAY API] RPC get_displayed_question executing", {
+      timestamp: Date.now(),
+    });
+  }
+
   const { data, error } = await supabase.rpc("get_displayed_question");
 
   if (error) {

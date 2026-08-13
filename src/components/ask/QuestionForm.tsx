@@ -77,7 +77,7 @@ export const QuestionForm: React.FC<QuestionFormProps> = ({
       <div className="space-y-2">
         <label
           htmlFor="question-input"
-          className="block text-xs font-mono tracking-widest text-[#71717A] uppercase font-semibold"
+          className="block text-xs font-medium tracking-wide text-[#687280] uppercase"
         >
           Your Anonymous Question
         </label>
@@ -97,16 +97,16 @@ export const QuestionForm: React.FC<QuestionFormProps> = ({
         />
 
         {/* Dynamic Character Counter */}
-        <div className="flex justify-between items-center text-xs font-mono text-[#71717A] px-1">
+        <div className="flex justify-between items-center text-xs text-[#687280] px-1">
           <span>Min 3 characters</span>
           <span
             id="character-count"
             className={
               charCount >= MAX_LENGTH
-                ? "text-rose-400 font-bold"
+                ? "text-[#EF4444] font-bold"
                 : charCount > 450
-                ? "text-amber-400 font-semibold"
-                : "text-[#71717A]"
+                ? "text-amber-600 font-semibold"
+                : "text-[#687280]"
             }
           >
             {charCount} / {MAX_LENGTH}
@@ -127,7 +127,7 @@ export const QuestionForm: React.FC<QuestionFormProps> = ({
         isLoading={isSubmitting}
         disabled={isSubmitting || (touched && !!error)}
       >
-        {isSubmitting ? "Submitting..." : "Submit Question"}
+        {isSubmitting ? "Submitting..." : "Send Question →"}
       </Button>
     </form>
   );

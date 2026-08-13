@@ -41,21 +41,21 @@ export const ModeratorLoginForm: React.FC<ModeratorLoginFormProps> = ({
   };
 
   return (
-    <div className="w-full max-w-sm mx-auto p-6 rounded-xl bg-[#111113] border border-[#27272A] space-y-6">
+    <div className="w-full max-w-sm mx-auto p-6 rounded-xl bg-white shadow-sm border border-[#E5E7EB] space-y-6">
       <div className="space-y-1.5 text-center sm:text-left">
-        <span className="text-xs font-mono tracking-widest text-[#71717A] uppercase font-semibold">
+        <span className="text-xs tracking-wider text-[#687280] uppercase font-semibold">
           MODERATOR ACCESS
         </span>
-        <h2 className="text-xl font-bold tracking-tight text-[#FAFAFA]">
+        <h2 className="text-xl font-bold tracking-tight text-[#111111]">
           Sign In to Control Panel
         </h2>
-        <p className="text-xs text-[#A1A1AA]">
+        <p className="text-xs text-[#687280]">
           Authorized ThinkTech moderators only.
         </p>
       </div>
 
       {error && (
-        <div className="p-3 rounded-lg bg-rose-500/10 border border-rose-500/30 text-rose-400 text-xs font-mono">
+        <div className="p-3 rounded-lg bg-red-50 border border-red-200 text-[#EF4444] text-xs">
           {error}
         </div>
       )}
@@ -64,7 +64,7 @@ export const ModeratorLoginForm: React.FC<ModeratorLoginFormProps> = ({
         <div className="space-y-1.5">
           <label
             htmlFor="moderator-email"
-            className="block text-xs font-mono text-[#71717A] uppercase tracking-wider font-semibold"
+            className="block text-xs text-[#687280] uppercase tracking-wider font-semibold"
           >
             Email Address
           </label>
@@ -76,14 +76,14 @@ export const ModeratorLoginForm: React.FC<ModeratorLoginFormProps> = ({
             placeholder="moderator@thinktech.org"
             disabled={isSubmitting}
             required
-            className="w-full px-3 py-2 text-sm rounded-lg bg-[#18181B] border border-[#27272A] text-[#FAFAFA] placeholder-[#52525B] focus:outline-none focus:border-[#FAFAFA] transition-colors"
+            className="w-full px-3 py-2 text-sm rounded-lg bg-white border border-[#E5E7EB] text-[#111111] placeholder-[#687280] focus:outline-none focus:border-[#1769D1] focus:ring-1 focus:ring-[#1769D1] transition-colors"
           />
         </div>
 
         <div className="space-y-1.5">
           <label
             htmlFor="moderator-password"
-            className="block text-xs font-mono text-[#71717A] uppercase tracking-wider font-semibold"
+            className="block text-xs text-[#687280] uppercase tracking-wider font-semibold"
           >
             Password
           </label>
@@ -95,7 +95,7 @@ export const ModeratorLoginForm: React.FC<ModeratorLoginFormProps> = ({
             placeholder="••••••••••••"
             disabled={isSubmitting}
             required
-            className="w-full px-3 py-2 text-sm rounded-lg bg-[#18181B] border border-[#27272A] text-[#FAFAFA] placeholder-[#52525B] focus:outline-none focus:border-[#FAFAFA] transition-colors"
+            className="w-full px-3 py-2 text-sm rounded-lg bg-white border border-[#E5E7EB] text-[#111111] placeholder-[#687280] focus:outline-none focus:border-[#1769D1] focus:ring-1 focus:ring-[#1769D1] transition-colors"
           />
         </div>
 

@@ -1,24 +1,87 @@
 @import "tailwindcss";
 
 :root {
-  --background: #09090b;
-  --surface-primary: #111113;
-  --surface-elevated: #18181b;
-  --border-subtle: #27272a;
-  --border-strong: #3f3f46;
-  --text-primary: #fafafa;
-  --text-secondary: #a1a1aa;
-  --text-muted: #71717a;
-  --text-disabled: #52525b;
+  /* ─── Background ─── */
+  --background: #ffffff;
+  --bg-secondary: #F5F6F7;
+
+  /* ─── Text ─── */
+  --text-primary: #111111;
+  --text-secondary: #687280;
+
+  /* ─── Border ─── */
+  --border: #E5E7EB;
+
+  /* ─── Brand Accents ─── */
+  --brand-blue: #1769D1;
+  --brand-blue-hover: #1255B0;
+  --brand-yellow: #FCC400;
+  --brand-orange: #FF7417;
+
+  /* ─── Semantic ─── */
+  --live-green: #22C55E;
+  --danger-red: #EF4444;
+
+  /* ─── Font ─── */
+  --font-sans: var(--font-inter), system-ui, -apple-system, sans-serif;
 }
 
 body {
   background-color: var(--background);
   color: var(--text-primary);
-  font-family: var(--font-inter), system-ui, -apple-system, sans-serif;
+  font-family: var(--font-sans);
 }
 
 ::selection {
-  background-color: #fafafa;
-  color: #09090b;
+  background-color: var(--brand-blue);
+  color: #ffffff;
+}
+
+/* ─── Subtle geometric motion keyframes ─── */
+@keyframes float-gentle {
+  0%, 100% { transform: translateY(0); }
+  50% { transform: translateY(-6px); }
+}
+
+@keyframes pulse-soft {
+  0%, 100% { opacity: 1; }
+  50% { opacity: 0.7; }
+}
+
+@keyframes fade-in-up {
+  from {
+    opacity: 0;
+    transform: translateY(12px);
+  }
+  to {
+    opacity: 1;
+    transform: translateY(0);
+  }
+}
+
+@keyframes fade-in {
+  from { opacity: 0; }
+  to { opacity: 1; }
+}
+
+/* ─── Reduced motion ─── */
+@media (prefers-reduced-motion: reduce) {
+  *, *::before, *::after {
+    animation-duration: 0.01ms !important;
+    animation-iteration-count: 1 !important;
+    transition-duration: 0.01ms !important;
+  }
+}
+
+/* ─── Utility animation classes ─── */
+.animate-fade-in-up {
+  animation: fade-in-up 0.4s ease-out both;
+}
+
+.animate-fade-in {
+  animation: fade-in 0.3s ease-out both;
+}
+
+.animate-float {
+  animation: float-gentle 4s ease-in-out infinite;
 }
