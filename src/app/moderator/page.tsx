@@ -6,7 +6,7 @@ import { supabase } from "@/lib/supabase";
 import type { Question, QuestionStats } from "@/types";
 import {
   fetchModeratorQuestions,
-  showQuestion,
+  showQuestionNow,
   dismissQuestion,
   answerQuestion,
   nextQuestion,
@@ -195,7 +195,7 @@ export default function ModeratorDashboardPage() {
     setActionInFlightId(id);
     setActionError(null);
 
-    const res = await showQuestion(id);
+    const res = await showQuestionNow(id);
     if (!res.success) {
       setActionError(res.message);
     }
@@ -589,7 +589,7 @@ export default function ModeratorDashboardPage() {
                               onClick={() => setConfirmDismissId(q.id)}
                               variant="danger"
                               size="sm"
-                              disabled={actionInFlightId !== null}
+                              disabled={actionInFlightId === q.id}
                               className="text-xs h-8 px-3"
                             >
                               {actionInFlightId === q.id ? "..." : "Dismiss"}
@@ -599,10 +599,10 @@ export default function ModeratorDashboardPage() {
                               variant="ghost"
                               size="sm"
                               isLoading={actionInFlightId === q.id}
-                              disabled={actionInFlightId !== null}
-                              className="text-xs h-8 px-3 border border-[#1769D1] text-[#1769D1] hover:bg-[#1769D1]/5"
+                              disabled={actionInFlightId === q.id}
+                              className="text-xs h-8 px-3 border border-[#1769D1] text-[#1769D1] hover:bg-[#1769D1]/5 font-bold"
                             >
-                              {actionInFlightId === q.id ? "..." : "Show"}
+                              {actionInFlightId === q.id ? "SHOWING..." : "SHOW NOW"}
                             </Button>
                           </>
                         )}

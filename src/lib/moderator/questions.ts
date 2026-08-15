@@ -85,6 +85,53 @@ export async function showQuestion(id: string): Promise<ActionResult> {
 }
 
 /**
+ * Atomic Show Question Now operation:
+ * Invokes public.show_question_now(question_id) RPC in PostgreSQL with row locking.
+ * Atomically marks current displayed question as answered (if present) and target pending question as displayed.
+ */
+export async function showQuestionNow(id: string): Promise<ActionResult> {
+  const { data, error } = await supabase.rpc("show_question_now", {
+    question_id: id,
+  });
+
+  if (error) {
+    return {
+      success: false,
+      code: "DATABASE_ERROR",
+      message: `Show question now failed: ${error.message}`,
+    };
+  }
+
+  const result = data as {
+    status?: "success" | "not_found" | "stale_state";
+    displayed_question_id?: string | null;
+    answered_question_id?: string | null;
+  } | null;
+
+  if (result?.status === "not_found") {
+    return {
+      success: false,
+      code: "NOT_FOUND",
+      message: "This question could not be found.",
+    };
+  }
+
+  if (result?.status === "stale_state") {
+    return {
+      success: false,
+      code: "STALE_STATE",
+      message: "This question has already been updated. Refreshing the queue...",
+    };
+  }
+
+  return {
+    success: true,
+    code: "SUCCESS",
+    message: "Question is now displayed on stage.",
+  };
+}
+
+/**
  * Updates a pending question to 'dismissed' status.
  * State machine check: pending -> dismissed
  * Conditional update enforces status = 'pending'.

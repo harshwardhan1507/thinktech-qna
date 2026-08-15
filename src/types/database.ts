@@ -67,6 +67,16 @@ export interface Database {
           answered_question_id: string | null;
         };
       };
+      show_question_now: {
+        Args: {
+          question_id: string;
+        };
+        Returns: {
+          status: "success" | "not_found" | "stale_state";
+          displayed_question_id: string | null;
+          answered_question_id: string | null;
+        };
+      };
     };
     Enums: {
       question_status: DatabaseQuestionStatus;
